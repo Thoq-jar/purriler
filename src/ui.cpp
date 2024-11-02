@@ -10,7 +10,7 @@ const std::string LOGO = R"(
 )";
 
 void print_usage(const char* program) {
-    const char* version = "1.0.0";
+    const char* version = "1.1.0";
     std::cerr << "Purriler v" << version << " - A C++ Compiler on LLVM 19\n\n"
               << "Usage: " << program << " <input files...> [options]\n"
               << "Options:\n"

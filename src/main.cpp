@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     
     if (options.show_version) {
         std::cout << LOGO << "\n";
-        const char* version = "1.0.0";
+        const char* version = "1.1c.0";
         std::cout << "Purriler v" << version << "\n";
         return 0;
     }
