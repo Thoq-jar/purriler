@@ -1,0 +1,20 @@
+output_dir = "example/build"
+output_name = "demo"
+
+sources = [
+    "example/src/main.cpp",
+    "example/src/geometry/point.cpp",
+    "example/src/geometry/circle.cpp",
+    "example/src/utils/pattern.cpp",
+    "example/src/utils/random.cpp",
+    "example/src/analysis/number_analyzer.cpp"
+]
+
+include_paths = [
+    ".",
+    "example",
+    "example/include",
+    "example/src",
+]
+
+library_paths = []

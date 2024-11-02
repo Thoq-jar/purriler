@@ -42,12 +42,17 @@ int main(int argc, char* argv[]) {
 
         string emit_ir_cmd = string("clang++ -S -emit-llvm -fPIC ")
             + "-target " + 
-            (fs::exists("/opt/homebrew") ? "arm64-apple-darwin" : "x86_64-unknown-linux-gnu") + " "
-            + "-I" + 
-            (fs::exists("/opt/homebrew") ? "/opt/homebrew/opt/llvm/include" : "/home/linuxbrew/.linuxbrew/Cellar/llvm/19.1.2/include") + " "
-            + "-I" + 
-            (fs::exists("/opt/homebrew") ? "/opt/homebrew/include" : "/home/linuxbrew/.linuxbrew/include") + " "
-            + "-fno-rtti " + input_file + " -o " + output_path.string() + ".ll 2>/dev/null";
+            (fs::exists("/opt/homebrew") ? "arm64-apple-darwin" : "x86_64-unknown-linux-gnu") + " ";
+        
+        for (const auto& path : options.include_paths) {
+            emit_ir_cmd += "-I" + path + " ";
+        }
+        
+        for (const auto& path : options.library_paths) {
+            emit_ir_cmd += "-L" + path + " ";
+        }
+        
+        emit_ir_cmd += "-fno-rtti " + input_file + " -o " + output_path.string() + ".ll";
         
         print_progress("Emit LLVM IR", 2);
         if (system(emit_ir_cmd.c_str()) != 0) {
