@@ -33,6 +33,10 @@ CompilerOptions parse_options(int argc, char* argv[]) {
             options.show_version = true;
         } else if (arg == "-h" || arg == "--help") {
             options.show_help = true;
+        } else if (arg == "--keep") {
+            options.keep_files = true;
+        } else if (arg.substr(0, 5) == "keep=") {
+            options.keep_files = (arg.substr(5) == "true");
         } else {
             options.input_files.push_back(std::string(arg));
         }
@@ -72,6 +76,10 @@ CompilerOptions parse_build_file(const std::string& file_path) {
         } else if (line.find("output_name = ") != std::string::npos) {
             options.output_name = line.substr(line.find("\"") + 1);
             options.output_name = options.output_name.substr(0, options.output_name.find("\""));
+        } else if (line.find("keep = ") != std::string::npos) {
+            std::string value = line.substr(line.find("=") + 1);
+            value.erase(0, value.find_first_not_of(" \t"));
+            options.keep_files = (value == "true");
         } else if (line.find("]") != std::string::npos) {
             current_array = "";
         } else if (!line.empty() && current_array != "") {

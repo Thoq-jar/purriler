@@ -1,5 +1,6 @@
 output_dir = "example/build"
 output_name = "demo"
+keep = false
 
 sources = [
     "example/src/main.cpp",

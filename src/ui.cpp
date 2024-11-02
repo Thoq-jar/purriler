@@ -20,7 +20,8 @@ void print_usage(const char* program) {
               << "  -I <path>             Add directory to include search path\n"
               << "  -L <path>             Add directory to library search path\n"
               << "  -v, --version         Show version information\n"
-              << "  -h, --help            Show this help message\n";
+              << "  -h, --help            Show this help message\n"
+              << "  --keep                Keep intermediate .ll and .o files\n";
 }
 
 void print_progress(const std::string& message, int depth) {

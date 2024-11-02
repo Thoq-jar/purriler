@@ -74,6 +74,9 @@ int main(int argc, char* argv[]) {
         print_result(true, "Machine code generated successfully", 3);
         
         obj_files.push_back(output_path.string() + ".o");
+        if (!options.keep_files) {
+            fs::remove(output_path.string() + ".ll");
+        }
     }
     
     print_progress("LLVM Emit Object", 1);
@@ -91,5 +94,12 @@ int main(int argc, char* argv[]) {
     fs::path final_binary = fs::path(options.out_dir) / options.output_name;
     print_result(true, "Compilation pipeline completed successfully!", 1);
     print_result(true, "Final binary: " + final_binary.string(), 1);
+    
+    if (!options.keep_files) {
+        for (const auto& obj_file : obj_files) {
+            fs::remove(obj_file);
+        }
+    }
+    
     return 0;
 }

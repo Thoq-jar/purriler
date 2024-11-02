@@ -11,6 +11,7 @@ struct CompilerOptions {
     std::string build_system_file = "";
     bool show_version = false;
     bool show_help = false;
+    bool keep_files = false;
 };
 
 CompilerOptions parse_options(int argc, char* argv[]);
