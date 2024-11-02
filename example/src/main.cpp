@@ -1,41 +1,54 @@
+#include "geometry/point.hpp"
+#include "geometry/circle.hpp"
+#include "utils/random.hpp"
+#include "utils/pattern.hpp"
+#include "analysis/number_analyzer.hpp"
 #include <iostream>
-#include <string>
+#include <iomanip>
+#include <memory>
 
-int factorial(int n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);
-}
-
-void printPattern(int rows) {
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j <= i; j++) {
-            std::cout << "* ";
-        }
-        std::cout << std::endl;
-    }
-}
+using namespace geometry;
+using namespace utils;
+using namespace analysis;
 
 int main() {
-    std::string name;
-    std::cout << "Enter your name: ";
-    std::getline(std::cin, name);
+    std::cout << "=== Advanced C++ Feature Demo ===\n\n";
     
-    std::cout << "Hello, " << name << "!" << std::endl;
+    std::vector<std::unique_ptr<Shape>> shapes;
+    shapes.push_back(std::make_unique<Circle>(Point(0, 0), 5));
+    shapes.push_back(std::make_unique<Circle>(Point(2, 3), 3));
     
-    for (int i = 1; i <= 5; i++) {
-        std::cout << i << "! = " << factorial(i) << std::endl;
+    std::cout << "Shapes Information:\n";
+    for (const auto& shape : shapes) {
+        shape->print();
+        std::cout << "Area: " << shape->area() << "\n";
+        std::cout << "Perimeter: " << shape->perimeter() << "\n\n";
     }
     
-    std::cout << "\nHere's a pattern for you:\n";
-    printPattern(4);
+    auto numbers = generateRandomVector<double>(10, 0.0, 100.0);
+    std::cout << "Random Numbers:\n";
+    for (const auto& num : numbers) {
+        std::cout << std::fixed << std::setprecision(2) << num << " ";
+    }
+    std::cout << "\n\n";
     
-    int sum = 0;
-    for (int i = 1; i <= 100; i++) {
-        if (i % 3 == 0 || i % 5 == 0) {
-            sum += i;
-        }
+    NumberAnalyzer analyzer;
+    for (int i = 1; i <= 20; i++) {
+        analyzer.addNumber(i % 5);
     }
     
-    std::cout << "\nSum of multiples of 3 or 5 up to 100: " << sum << std::endl;
+    std::cout << "Number Analysis:\n";
+    std::cout << "Average: " << analyzer.average() << "\n";
+    std::cout << "Sum: " << analyzer.sum() << "\n";
+    std::cout << "Frequency Distribution:\n";
+    for (const auto& [num, freq] : analyzer.frequency()) {
+        std::cout << num << ": " << std::string(freq, '*') << "\n";
+    }
+    
+    std::cout << "\nDecorative Patterns:\n";
+    printPattern(5, '#');
+    std::cout << "\n";
+    printPattern(7, '@');
+    
     return 0;
 }

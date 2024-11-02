@@ -1,37 +1,13 @@
+#include "../include/compiler/options.hpp"
+#include "../include/compiler/ui.hpp"
 #include <iostream>
-#include <string>
-#include <cstdlib>
 #include <filesystem>
-#include <string_view>
+#include <string>
+#include <vector>
 
-using namespace std;
-namespace fs = filesystem;
-
-void print_usage(const char* program) {
-    cerr << "[-] Usage: " << program << " <input.cpp> [options]\n"
-              << "Options:\n"
-              << "  --out-dir=<path>    Output directory for generated files\n";
-}
-
-string parse_out_dir(int argc, char* argv[]) {
-    string_view out_dir = ".";
-    const string prefix = "--out-dir=";
-    
-    for (int i = 2; i < argc; i++) {
-        string_view arg(argv[i]);
-        if (arg.substr(0, prefix.length()) == prefix) {
-            out_dir = arg.substr(prefix.length());
-            break;
-        }
-    }
-    
-    fs::path dir_path(out_dir);
-    if (!fs::exists(dir_path)) {
-        fs::create_directories(dir_path);
-    }
-    
-    return string(out_dir);
-}
+namespace fs = std::filesystem;
+using std::string;
+using std::vector;
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
@@ -39,47 +15,76 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    string input_file = argv[1];
-    string out_dir = parse_out_dir(argc, argv);
+    CompilerOptions options = parse_options(argc, argv);
     
-    fs::path input_path(input_file);
-    fs::path base_name = input_path.stem();
-    fs::path output_path = fs::path(out_dir) / base_name;
+    if (options.show_version) {
+        std::cout << LOGO << "\n";
+        const char* version = "1.0.0";
+        std::cout << "Purriler v" << version << "\n";
+        return 0;
+    }
     
-    string emit_ir_cmd = "clang++ -S -emit-llvm -fPIC "
-        "-target x86_64-unknown-linux-gnu "
-        "-I/home/linuxbrew/.linuxbrew/Cellar/llvm/19.1.2/include "
-        "-I/home/linuxbrew/.linuxbrew/include "
-        "-fno-rtti " + input_file + " -o " + output_path.string() + ".ll";
+    if (options.show_help) {
+        std::cout << LOGO << "\n";
+        print_usage(argv[0]);
+        return 0;
+    }
     
-    string codegen_cmd = "llc -filetype=obj -relocation-model=pic "
-        "-mtriple=x86_64-unknown-linux-gnu " + 
-        output_path.string() + ".ll -o " + output_path.string() + ".o";
+    print_progress("Starting compilation pipeline");
     
-    string link_cmd = "clang++ -fPIC " + output_path.string() + ".o "
-        "-L/home/linuxbrew/.linuxbrew/lib "
-        "-o " + output_path.string();
+    vector<string> obj_files;
+    for (const string& input_file : options.input_files) {
+        fs::path input_path(input_file);
+        fs::path base_name = input_path.stem();
+        fs::path output_path = fs::path(options.out_dir) / base_name;
+        
+        print_progress("Processing " + input_file, 1);
 
-    cout << "[/] Starting compilation pipeline:\n";
-    
-    cout << "[1] LLVM IR Generation...\n";
-    if (system(emit_ir_cmd.c_str()) != 0) {
-        cerr << "[-] LLVM IR Generation failed\n";
-        return 1;
+        string emit_ir_cmd = string("clang++ -S -emit-llvm -fPIC ")
+            + "-target " + 
+            (fs::exists("/opt/homebrew") ? "arm64-apple-darwin" : "x86_64-unknown-linux-gnu") + " "
+            + "-I" + 
+            (fs::exists("/opt/homebrew") ? "/opt/homebrew/opt/llvm/include" : "/home/linuxbrew/.linuxbrew/Cellar/llvm/19.1.2/include") + " "
+            + "-I" + 
+            (fs::exists("/opt/homebrew") ? "/opt/homebrew/include" : "/home/linuxbrew/.linuxbrew/include") + " "
+            + "-fno-rtti " + input_file + " -o " + output_path.string() + ".ll 2>/dev/null";
+        
+        print_progress("Emit LLVM IR", 2);
+        if (system(emit_ir_cmd.c_str()) != 0) {
+            print_result(false, "Failed to emit LLVM IR", 3);
+            return 1;
+        }
+        print_result(true, "LLVM IR generated successfully", 3);
+        
+        string codegen_cmd = string("llc -filetype=obj -relocation-model=pic ")
+            + "-mtriple=" + 
+            (fs::exists("/opt/homebrew") ? "arm64-apple-darwin" : "x86_64-unknown-linux-gnu") + " "
+            + output_path.string() + ".ll -o " + output_path.string() + ".o 2>/dev/null";
+        
+        print_progress("LLVM CodeGen (Machine Code Generation)", 2);
+        if (system(codegen_cmd.c_str()) != 0) {
+            print_result(false, "CodeGen failed", 3);
+            return 1;
+        }
+        print_result(true, "Machine code generated successfully", 3);
+        
+        obj_files.push_back(output_path.string() + ".o");
     }
     
-    cout << "[2] LLVM CodeGen (Machine Code Generation)...\n";
-    if (system(codegen_cmd.c_str()) != 0) {
-        cerr << "[-] LLVM CodeGen failed\n";
-        return 1;
+    print_progress("LLVM Emit Object", 1);
+    string link_cmd = string("clang++ -fPIC ");
+    for (const auto& obj_file : obj_files) {
+        link_cmd += obj_file + " ";
     }
-    
-    cout << "[3] LLVM Emit Object...\n";
+    link_cmd += "-o " + (fs::path(options.out_dir) / options.output_name).string() + " 2>/dev/null";
     if (system(link_cmd.c_str()) != 0) {
-        cerr << "[-] Emit Object failed\n";
+        print_result(false, "Failed to emit object file(s)", 2);
         return 1;
     }
+    print_result(true, "Sucessfully emited object file(s)", 2);
     
-    cout << "[!] Compilation pipeline completed successfully!\n";
+    fs::path final_binary = fs::path(options.out_dir) / options.output_name;
+    print_result(true, "Compilation pipeline completed successfully!", 1);
+    print_result(true, "Final binary: " + final_binary.string(), 1);
     return 0;
 }
