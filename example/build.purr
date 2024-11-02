@@ -1,6 +1,6 @@
 output_dir = "example/build"
 output_name = "demo"
-keep = false
+keep = true
 
 sources = [
     "example/src/main.cpp",
@@ -16,6 +16,14 @@ include_paths = [
     "example",
     "example/include",
     "example/src",
+]
+
+compiler_flags = [
+    "-std=c++17",
+    "-Wall",
+    "-Wextra",
+    "-O2",
+    "-fPIC"
 ]
 
 library_paths = []

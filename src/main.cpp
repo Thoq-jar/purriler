@@ -44,6 +44,10 @@ int main(int argc, char* argv[]) {
             + "-target " + 
             (fs::exists("/opt/homebrew") ? "arm64-apple-darwin" : "x86_64-unknown-linux-gnu") + " ";
         
+        for (const auto& flag : options.compiler_flags) {
+            emit_ir_cmd += flag + " ";
+        }
+        
         for (const auto& path : options.include_paths) {
             emit_ir_cmd += "-I" + path + " ";
         }

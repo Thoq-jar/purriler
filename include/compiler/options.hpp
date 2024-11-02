@@ -6,6 +6,7 @@ struct CompilerOptions {
     std::vector<std::string> input_files;
     std::vector<std::string> include_paths;
     std::vector<std::string> library_paths;
+    std::vector<std::string> compiler_flags;
     std::string out_dir = ".";
     std::string output_name = "a.out";
     std::string build_system_file = "";

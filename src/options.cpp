@@ -64,12 +64,19 @@ CompilerOptions parse_build_file(const std::string& file_path) {
     while (std::getline(file, line)) {
         if (line.empty() || line[0] == '#') continue;
         
+        line.erase(0, line.find_first_not_of(" \t"));
+        line.erase(line.find_last_not_of(" \t") + 1);
+        
         if (line.find("sources = [") != std::string::npos) {
             current_array = "sources";
         } else if (line.find("include_paths = [") != std::string::npos) {
             current_array = "include_paths";
         } else if (line.find("library_paths = [") != std::string::npos) {
             current_array = "library_paths";
+        } else if (line.find("compiler_flags = [") != std::string::npos) {
+            current_array = "compiler_flags";
+        } else if (line == "]") {
+            current_array = "";
         } else if (line.find("output_dir = ") != std::string::npos) {
             options.out_dir = line.substr(line.find("\"") + 1);
             options.out_dir = options.out_dir.substr(0, options.out_dir.find("\""));
@@ -80,8 +87,6 @@ CompilerOptions parse_build_file(const std::string& file_path) {
             std::string value = line.substr(line.find("=") + 1);
             value.erase(0, value.find_first_not_of(" \t"));
             options.keep_files = (value == "true");
-        } else if (line.find("]") != std::string::npos) {
-            current_array = "";
         } else if (!line.empty() && current_array != "") {
             std::string value = line.substr(line.find("\"") + 1);
             value = value.substr(0, value.find("\""));
@@ -92,6 +97,8 @@ CompilerOptions parse_build_file(const std::string& file_path) {
                 options.include_paths.push_back(value);
             } else if (current_array == "library_paths") {
                 options.library_paths.push_back(value);
+            } else if (current_array == "compiler_flags") {
+                options.compiler_flags.push_back(value);
             }
         }
     }
