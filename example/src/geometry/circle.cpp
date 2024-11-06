@@ -1,6 +1,5 @@
 #include "circle.hpp"
 #include <iostream>
-#include <cmath>
 
 namespace geometry {
     Circle::Circle(const Point& center, double radius) 
