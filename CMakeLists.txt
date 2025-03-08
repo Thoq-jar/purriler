@@ -9,8 +9,7 @@ if(APPLE)
     set(LLVM_DIR "/opt/homebrew/opt/llvm/lib/cmake/llvm")
     set(Clang_DIR "/opt/homebrew/opt/llvm/lib/cmake/clang")
 else()
-    set(LLVM_DIR "/home/linuxbrew/.linuxbrew/lib/cmake/llvm")
-    set(Clang_DIR "/home/linuxbrew/.linuxbrew/lib/cmake/clang")
+
 endif()
 
 find_package(LLVM 19.1.2 REQUIRED CONFIG)
@@ -48,17 +47,6 @@ else()
         -Wl,--start-group
         clang-cpp
         LLVM
-        clangBasic
-        clangDriver
-        clangFrontend
-        clangTooling
-        clangCodeGen
-        clangSerialization
-        clangParse
-        clangSema
-        clangAnalysis
-        clangAST
-        clangLex
         -Wl,--end-group
     )
 endif()
